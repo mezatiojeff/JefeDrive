@@ -20,6 +20,12 @@ public class VehicleController {
     public List<Vehicle> getAllVehicles() {
         return vehicleService.getAllVehicles();
     }
+
+    @PostMapping
+    public Vehicle createVehicle(@RequestBody Vehicle vehicle) {
+        return vehicleService.createVehicle(vehicle);
+    }
+
 }
 
 
