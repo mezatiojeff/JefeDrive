@@ -1,8 +1,10 @@
 
 package com.jefedrive.backend.controller;
 
+import com.jefedrive.backend.entity.Vehicle;
 import com.jefedrive.backend.service.VehicleService;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
@@ -13,5 +15,11 @@ public class VehicleController {
     public VehicleController(VehicleService vehicleService) {
         this.vehicleService = vehicleService;
     }
+
+    @GetMapping
+    public List<Vehicle> getAllVehicles() {
+        return vehicleService.getAllVehicles();
+    }
 }
+
 
