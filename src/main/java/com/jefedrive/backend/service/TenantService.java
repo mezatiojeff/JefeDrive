@@ -7,13 +7,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.jefedrive.backend.repository.RentalRepository;
+
 @Service
 public class TenantService {
 
     private final TenantRepository tenantRepository;
 
-    public TenantService(TenantRepository tenantRepository) {
+    private final RentalRepository rentalRepository;
+
+    public TenantService(
+            TenantRepository tenantRepository,
+            RentalRepository rentalRepository) {
         this.tenantRepository = tenantRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     public List<Tenant> getAllTenants() {
@@ -22,7 +32,10 @@ public class TenantService {
 
     public Tenant getTenantById(Long id) {
         return tenantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Tenant not found with id: " + id
+                ));
     }
 
     public Tenant createTenant(Tenant tenant) {
@@ -47,6 +60,14 @@ public class TenantService {
 
     public void deleteTenant(Long id) {
         Tenant tenant = getTenantById(id);
+
+        if (rentalRepository.existsByTenantId(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Cannot delete a tenant who has rental history"
+            );
+        }
+
         tenantRepository.delete(tenant);
     }
 }
