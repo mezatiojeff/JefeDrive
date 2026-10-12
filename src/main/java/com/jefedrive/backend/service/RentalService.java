@@ -196,6 +196,47 @@ public class RentalService {
                 ));
     }
 
+    public Rental confirmRental(Long id) {
+        Rental rental = rentalRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Rental not found with id: " + id
+                ));
+
+        if (rental.getStatus() != Rental.Status.PENDING) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Only pending rentals can be confirmed"
+            );
+        }
+
+        rental.setStatus(Rental.Status.CONFIRMED);
+        rental.setUpdatedAt(LocalDateTime.now());
+
+        return rentalRepository.save(rental);
+    }
+
+    public Rental cancelRental(Long id) {
+        Rental rental = rentalRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Rental not found with id: " + id
+                ));
+
+        if (rental.getStatus() != Rental.Status.PENDING
+                && rental.getStatus() != Rental.Status.CONFIRMED) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Only pending or confirmed rentals can be cancelled"
+            );
+        }
+
+        rental.setStatus(Rental.Status.CANCELLED);
+        rental.setUpdatedAt(LocalDateTime.now());
+
+        return rentalRepository.save(rental);
+    }
+
 
 }
 
