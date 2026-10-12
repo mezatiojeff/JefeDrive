@@ -46,5 +46,15 @@ public class RentalController {
     public Rental getRentalById(@PathVariable Long id) {
         return rentalService.getRentalById(id);
     }
+
+    @PutMapping("/{id}/confirm")
+    public Rental confirmRental(@PathVariable Long id) {
+        return rentalService.confirmRental(id);
+    }
+
+    @PutMapping("/{id}/cancel")
+    public Rental cancelRental(@PathVariable Long id) {
+        return rentalService.cancelRental(id);
+    }
 }
 
