@@ -19,7 +19,7 @@ public class Rental {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 50)
     private String reference;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
