@@ -216,6 +216,7 @@ public class RentalService {
         return rentalRepository.save(rental);
     }
 
+
     public Rental cancelRental(Long id) {
         Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -231,11 +232,22 @@ public class RentalService {
             );
         }
 
+        BigDecimal cancellationFee = rental.getRentalAmount()
+                .multiply(new BigDecimal("0.10"))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal depositRefund = rental.getDepositAmount()
+                .subtract(cancellationFee)
+                .max(BigDecimal.ZERO);
+
+        rental.setCancellationFee(cancellationFee);
+        rental.setDepositRefund(depositRefund);
         rental.setStatus(Rental.Status.CANCELLED);
         rental.setUpdatedAt(LocalDateTime.now());
 
         return rentalRepository.save(rental);
     }
+
 
 
 }
