@@ -56,5 +56,10 @@ public class RentalController {
     public Rental cancelRental(@PathVariable Long id) {
         return rentalService.cancelRental(id);
     }
+
+    @PutMapping("/{id}/handover")
+    public Rental handoverRental(@PathVariable Long id) {
+        return rentalService.handoverRental(id);
+    }
 }
 

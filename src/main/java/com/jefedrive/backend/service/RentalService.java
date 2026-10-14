@@ -23,6 +23,8 @@ import com.jefedrive.backend.entity.User;
 
 import java.util.UUID;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class RentalService {
 
@@ -216,7 +218,6 @@ public class RentalService {
         return rentalRepository.save(rental);
     }
 
-
     public Rental cancelRental(Long id) {
         Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -248,7 +249,40 @@ public class RentalService {
         return rentalRepository.save(rental);
     }
 
+    @Transactional
+    public Rental handoverRental(long id) {
+        Rental rental = rentalRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Rental not found with id: " + id
+                ));
 
+        if (rental.getStatus() != Rental.Status.CONFIRMED) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Only confirmed rentals can be handed over"
+            );
+        }
+
+        Vehicle vehicle = rental.getVehicle();
+
+        if (vehicle.getStatus() != Vehicle.Status.AVAILABLE) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Vehicle is not available for handover"
+            );
+        }
+
+        rental.setStatus(Rental.Status.ACTIVE);
+        rental.setUpdatedAt(LocalDateTime.now());
+
+        vehicle.setStatus(Vehicle.Status.RENTED);
+
+        rentalRepository.save(rental);
+        vehicleRepository.save(vehicle);
+
+        return rental;
+    }
 
 }
 
