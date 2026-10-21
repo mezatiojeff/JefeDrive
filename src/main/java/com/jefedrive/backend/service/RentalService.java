@@ -198,6 +198,9 @@ public class RentalService {
                 ));
     }
 
+
+
+    @Transactional
     public Rental confirmRental(Long id) {
         Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -212,12 +215,26 @@ public class RentalService {
             );
         }
 
+        Vehicle vehicle = rental.getVehicle();
+
+        if (vehicle.getStatus() != Vehicle.Status.AVAILABLE) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Vehicle is not available"
+            );
+        }
+
         rental.setStatus(Rental.Status.CONFIRMED);
         rental.setUpdatedAt(LocalDateTime.now());
+
+        vehicle.setStatus(Vehicle.Status.RENTED);
+        vehicleRepository.save(vehicle);
 
         return rentalRepository.save(rental);
     }
 
+
+    @Transactional
     public Rental cancelRental(Long id) {
         Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -246,7 +263,31 @@ public class RentalService {
         rental.setStatus(Rental.Status.CANCELLED);
         rental.setUpdatedAt(LocalDateTime.now());
 
-        return rentalRepository.save(rental);
+        Rental savedRental = rentalRepository.save(rental);
+
+        Vehicle vehicle = rental.getVehicle();
+
+        List<Rental.Status> blockingStatuses = List.of(
+                Rental.Status.CONFIRMED,
+                Rental.Status.ACTIVE
+        );
+
+        boolean anotherRentalBlocksVehicle =
+                rentalRepository
+                        .existsByVehicleIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(
+                                vehicle.getId(),
+                                blockingStatuses,
+                                rental.getEndDate(),
+                                rental.getStartDate()
+                        );
+
+        if (!anotherRentalBlocksVehicle
+                && vehicle.getStatus() == Vehicle.Status.RENTED) {
+            vehicle.setStatus(Vehicle.Status.AVAILABLE);
+            vehicleRepository.save(vehicle);
+        }
+
+        return savedRental;
     }
 
     @Transactional
@@ -266,7 +307,7 @@ public class RentalService {
 
         Vehicle vehicle = rental.getVehicle();
 
-        if (vehicle.getStatus() != Vehicle.Status.AVAILABLE) {
+        if (vehicle.getStatus() != Vehicle.Status.RENTED) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Vehicle is not available for handover"
