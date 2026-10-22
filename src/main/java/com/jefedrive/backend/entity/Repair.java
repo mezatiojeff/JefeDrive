@@ -16,6 +16,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Repair {
 
+    public enum Status {
+        IN_PROGRESS,
+        COMPLETED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,6 +40,10 @@ public class Repair {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Status status = Status.IN_PROGRESS;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
