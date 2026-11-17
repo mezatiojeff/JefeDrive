@@ -8,6 +8,7 @@ import com.jefedrive.backend.repository.TenantRepository;
 import com.jefedrive.backend.repository.UserRepository;
 import com.jefedrive.backend.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
+import com.jefedrive.backend.service.PaymentService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,17 +33,21 @@ public class RentalService {
     private final VehicleRepository vehicleRepository;
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
 
     public RentalService(
             RentalRepository rentalRepository,
             VehicleRepository vehicleRepository,
             TenantRepository tenantRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            PaymentService paymentService
+
     ) {
         this.rentalRepository = rentalRepository;
         this.vehicleRepository = vehicleRepository;
         this.tenantRepository = tenantRepository;
         this.userRepository = userRepository;
+        this.paymentService = paymentService;
     }
 
 
@@ -264,6 +269,7 @@ public class RentalService {
         rental.setUpdatedAt(LocalDateTime.now());
 
         Rental savedRental = rentalRepository.save(rental);
+        paymentService.requestRefund(id, cancellationFee);
 
         Vehicle vehicle = rental.getVehicle();
 

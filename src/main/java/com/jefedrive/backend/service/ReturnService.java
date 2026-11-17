@@ -134,17 +134,25 @@ public class ReturnService {
         vehicleReturn.setCreatedAt(LocalDateTime.now());
 
         rental.setLateFee(lateFee);
+        rental.setStatus(Rental.Status.COMPLETED);
         rental.setUpdatedAt(LocalDateTime.now());
 
         Vehicle vehicle = rental.getVehicle();
         vehicle.setMileage(mileage);
 
+        if (Boolean.TRUE.equals(hasDamage)) {
+            vehicle.setStatus(Vehicle.Status.MAINTENANCE);
+        } else {
+            vehicle.setStatus(Vehicle.Status.AVAILABLE);
+        }
+
         rentalRepository.save(rental);
+        vehicleRepository.save(vehicle);
 
         return returnRepository.save(vehicleReturn);
     }
 
-        @Transactional
+    @Transactional
     public Damage recordDamage(Long returnId, String description, BigDecimal cost) {
         Return vehicleReturn = returnRepository.findById(returnId)
                 .orElseThrow(() -> new ResponseStatusException(

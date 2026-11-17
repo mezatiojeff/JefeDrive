@@ -15,6 +15,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Payment {
 
+    public enum PaymentMethod {
+        ORANGE_MONEY,
+        MTN_MOMO,
+        ALIPAY,
+        CASH
+    }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,8 +52,9 @@ public class Payment {
     @Column(name = "paid_currency", nullable = false, length = 3)
     private String paidCurrency;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false, length = 30)
-    private String paymentMethod;
+    private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -60,10 +69,18 @@ public class Payment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "refund_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal refundAmount;
+
+    @Column(name = "refund_date")
+    private LocalDateTime refundDate;
+
     public enum Status {
         PENDING,
         PAID,
         FAILED,
+        CANCELLED,
+        REFUND_PENDING,
         REFUNDED
     }
 }
